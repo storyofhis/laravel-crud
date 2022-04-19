@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Post;
+use App\Models\Mahasiswa;
 
-class PostController extends Controller
+class MahasiswaController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,8 +15,9 @@ class PostController extends Controller
     public function index()
     {
         //
-        $data = Post::all();
-        return view('index')->within([
+        $data = Mahasiswa::all();
+        $data_semua = Mahasiswa::count();
+        return view('list-data', [
             'data' => $data,
         ]);
     }
@@ -29,7 +30,7 @@ class PostController extends Controller
     public function create()
     {
         //
-        return view('create');
+        return view('create-data');
     }
 
     /**
@@ -41,9 +42,12 @@ class PostController extends Controller
     public function store(Request $request)
     {
         //
-        $data = $request->except(['_token']);
-        Post::insert($data);
-        return redirect('/');
+        $validatedData = $request->validate([
+            'title' => 'required|max:255',
+            'isi' => 'required',
+        ]);
+        Mahasiswa::create($validatedData);
+        return redirect()->route('home')->with('tambah_data', 'Penambahan data berhasil');
     }
 
     /**
@@ -55,6 +59,10 @@ class PostController extends Controller
     public function show($id)
     {
         //
+        $data = Mahasiswa::where('id', $id)->first();
+        return view('detail-data', [
+            'data' => $data
+        ]);
     }
 
     /**
@@ -66,6 +74,10 @@ class PostController extends Controller
     public function edit($id)
     {
         //
+        $data = Mahasiswa::where('id', $id)->first();
+        return view('edit-data', [
+            'data'=>$data,
+        ]);
     }
 
     /**
@@ -78,6 +90,14 @@ class PostController extends Controller
     public function update(Request $request, $id)
     {
         //
+        $validatedData = $request->validate([
+            'title' => 'required|max:255',
+            'isi' => 'required',
+        ]);
+
+        $pengumuman = Mahasiswa::findOrFail($id);
+        $pengumuman->update($validatedData);
+        return redirect()->route('home')->with('edit_data', 'Pengeditan Data berhasil');
     }
 
     /**
@@ -89,5 +109,8 @@ class PostController extends Controller
     public function destroy($id)
     {
         //
+        $pengumuman = Mahasiswa::findOrFail($id);
+        $pengumuman->delete();
+  return redirect()->route('home')->with('hapus_data', 'Penghapusan data berhasil');
     }
 }
